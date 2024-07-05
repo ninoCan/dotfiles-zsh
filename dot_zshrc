@@ -1,0 +1,175 @@
+
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_STATE_HOME="$HOME/.local/state"
+export XDG_BIN_HOME="$HOME/.local/bin"
+
+
+export BIN="$XDG_BIN_HOME"
+export JAVA_HOME=$(/usr/libexec/java_home)
+
+export PATH="$BIN: $PATH"
+export ZDOTDIR="$XDG_CONFIG_HOME/zsh"
+export ZSHRC_DIR="${XDG_HOME:-${HOME}/.config}/zsh/"
+
+export STARSHIP_CACHE="$XDG_CACHE_HOME/starship/cache"
+export _ZO_DATA_DIR="$XDG_DATA_HOME/zoxide"
+export _ZO_ECHO=1;
+ 
+export STARSHIP_CONFIG="$XDG_CONFIG_HOME/starship/starship.toml"
+export CARGO_HOME="$XDG_CONFIG_HOME/cargo"
+export DOCKER_CONFIG="$XDG_CONFIG_HOME/docker"
+export GNUPGHOME="$XDG_CONFIG_HOME/gnupg"
+export KUBECACHE="$XDG_CACHE_HOME/kube"
+export LESSHISTFILE="$XDG_CACHE_HOME/less/history"
+export NODE_REPL_HISTORY="$XDG_DATA_HOME/node_repl_history"
+export NPM_CONFIG_USERCONFIG="$XDG_CONFIG_HOME/npm/пргс"
+export PASSWORD_STORE_DIR="$XDG_DATA_HOME/ password-store"
+export PIP_CONFIG_FILE="$XDG_CONFIG_HOME/pip/pip.conf"
+export PYTHONSTARTUP="$XDG_CONFIG_HOME/python/pythonrc"
+export TIMEWARRIORDB="$XDG_CONFIG_HOME/timewarrior"
+export WAKATIME_HOME="$XDG_CONFIG_HOME/wakatime"
+
+# Make brew available to the PATH
+if [[ -f "/opt/homebrew/bin/brew" ]] then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+
+# Set the directory we want to store zinit and plugins
+ZINIT_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}/zinit/zinit.git"
+
+# Download Zinit, if it's not there yet
+if [ ! -d "$ZINIT_HOME" ]; then
+   mkdir -p "$(dirname $ZINIT_HOME)"
+   git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+
+# Source/Load zinit
+source "${ZINIT_HOME}/zinit.zsh"
+
+
+# Add in zsh plugins
+zinit light zdharma-continuum/fast-syntax-highlighting
+zinit light zsh-users/zsh-completions
+zinit light zsh-users/zsh-autosuggestions
+
+# Add in snippets
+zinit snippet OMZL::completion.zsh
+zinit snippet OMZP::git
+zinit snippet OMZP::sudo
+zinit snippet OMZP::aws
+zinit snippet OMZP::kubectl
+zinit snippet OMZP::kubectx
+zinit snippet OMZP::command-not-found
+
+# Load completions
+autoload -Uz compinit && compinit
+
+zinit cdreplay -q
+
+
+# History configurations
+HISTSIZE=9999999
+HISTFILE=~/.zsh_history
+SAVEHIST=$HISTSIZE
+HISTDUP=erase
+setopt appendhistory
+setopt sharehistory
+setopt hist_ignore_space
+setopt hist_ignore_all_dups
+setopt hist_save_no_dups
+setopt hist_ignore_dups
+setopt hist_find_no_dups
+
+# Completion styling
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
+zstyle ':fzf-tab:complete:__zoxide_z:*' fzf-preview 'ls --color $realpath'
+
+ 
+# Aliases
+alias zshconfig="vim  ~/.zshrc"
+alias vimconfig='vim ~/.vimrc'
+alias reload-zshrc='source ~/.zshrc'
+alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles.git/ --work-tree=$HOME'
+alias dfl='dotfiles'
+alias dfla='dotfiles add'
+alias dflc='dotfiles commit'
+alias dfls='dotfiles status'
+alias ns='networksetup'
+alias ks='k9s'
+alias bat='bat --color=always --style=numbers'
+alias ls='ls --color=always'
+alias ll='ls --color=always -lh'
+alias la='ls -A'
+alias fzf='fzf --reverse'
+alias fzf-preview='fzf --preview="bat --color=always --style=numbers {}" --bind ctrl-space:preview-down'
+alias fzf-vim='fzf --preview="vim {}"'
+# alias man='batman'
+alias dps='docker ps'
+alias dps-live='batwatch --style=plain --command zsh -c "docker ps --all | docker-color-output"'
+alias b='bat --color=always --style=numbers'
+alias myip='curl http://ipecho.net/plain; echo'
+alias -s md=mdless
+alias git-get='git status --porcelain=v2 | rev | cut -d" " -f1 | rev | xargs echo'
+alias lh='ls -Ad .*'
+alias test-gnupg='echo "test" | gpg --clearsign'
+alias mdless='mdcat -p'
+alias bathelp='bat --plain --language=help'
+alias -g awsconfig='~/.aws/config'
+alias -g bJSON=' | bat --language=json'
+alias -g bLOG=' | bat --language=log'
+alias git-rebase-on-pulled-master='git switch master && git pull && git switch - && git rebase master && git pull --force'
+# alias vk='viddy kubectl'
+alias pg-start="pg_ctl -D /home/nino/Databases/ -l logfile start"
+alias pg-stop="pg_ctl -D /home/nino/Databases/ -l logfile stop"
+alias pg-restart="pg_ctl -D /home/nino/Databases/ -l logfile restart"
+alias y="yay"
+alias pbcopy='xclip -selection clipboard' 
+alias cz='chezmoi'
+alias cza='chezmoi add'
+alias czs='chezmoi status'
+alias czcd='chezmoi cd'
+alias download-webpage='wget --page-requisites --convert-links --user-agent=Mozilla -nc'
+alias dcp='docker-compose'
+alias z="zoxide"
+alias tw="timew"
+alias twsi="timew summary :ids"
+
+# Functions
+function review-current-branch() {
+    if [[ -z $1 ]];
+    then 
+         MAIN_BRANCH="master"
+    else
+        MAIN_BRANCH=$1
+    fi
+    CURRENT_BRANCH="$(git branch --show-current)"
+    git $@ diff --name-only "$CURRENT_BRANCH" $(git merge-base "$CURRENT_BRANCH" "$MAIN_BRANCH")
+}
+
+
+function review-current-branch-in-vim() {
+    vim `review-current-branch`
+}
+
+export PATH="$BIN:$PATH:$HOME/Library/Application Support/Coursier/bin"
+
+# colorful help messages with bat
+function help() {
+    "$@" --help 2>&1 | bathelp
+}
+
+# search among existing aliases
+function seek-alias() {
+    alias | rg $1
+}
+
+# Shell intregations
+eval "$(starship init zsh)"
+eval "$(fzf --zsh)"
+eval "$(zoxide init --cmd cd zsh)"
+
